@@ -1,0 +1,124 @@
+<html>
+  <head>
+    <title>Wasp Game</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      .wasp {
+        text-align: center;
+        padding: 10px;
+        margin: 10px;
+        border: 1px solid black;
+        display: inline-block;
+      }
+
+      button {
+        padding: 10px;
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hive"></div>
+
+    <button onclick="hive.attack()">Attack</button>
+    <button onclick="newGame()">New Game</button>
+
+    <script>
+      class Wasp {
+        hitPoints = 0;
+        defense = 7;
+        killsWholeHiveWhenDead = false;
+
+        constructor(id) {
+          this.id = id;
+        }
+        attack() {
+          if (!this.isDead()) this.hitPoints -= this.defense;
+          if (this.hitPoints < 0) this.hitPoints = 0;
+        }
+        isDead = () => this.hitPoints <= 0;
+
+        getHTML() {
+          return `<div class="wasp">
+                 <p>${this.constructor.name}</p>
+                 <p>${this.hitPoints}</p>
+                </div> `;
+        }
+      }
+
+      class Queen extends Wasp {
+        hitPoints = 80;
+        defense = 7;
+        killsWholeHiveWhenDead = true;
+      }
+
+      class Worker extends Wasp {
+        hitPoints = 60;
+        defense = 10;
+      }
+
+      class Drone extends Wasp {
+        hitPoints = 50;
+        defense = 10;
+      }
+
+      class Hive {
+        wasps = [];
+
+        constructor(htmlID) {
+          this.htmlID = htmlID;
+          this.addWasps(Queen, 1);
+          this.addWasps(Worker, 5);
+          this.addWasps(Drone, 8);
+          this.showHiveState();
+        }
+
+        // add wasps
+
+        addWasps = (WaspType, number) => {
+          for (let index = 0; index < number; index++) {
+            const wasp = new WaspType(WaspType.name + "-" + index);
+            this.wasps.push(wasp);
+          }
+        };
+        // remove wasps
+        removeWasp = (wasp) => {
+          const index = this.wasps.indexof(wasp);
+          this.wasps.splice(index, 1);
+          if (Wasp.killsWholeHiveWhenDead) this.wasps = [];
+        };
+
+        // find random wasp
+        findRandomWasp = () => {
+          const randomWaspIndex = Math.floor(Math.random() * this.wasps.length);
+          return this.wasps[randomWaspIndex];
+        };
+
+        // show hive status
+        showHiveState = () => {
+          const htmlHive = document.getElementById(this.htmlID);
+          htmlHive.innerHTML = "";
+          this.wasps.forEach((wasp) => (htmlHive.innerHTML += wasp.getHTML()));
+        };
+
+        // attack
+        attack = () => {
+          const targetWasp = this.findRandomWasp();
+          targetWasp.attack();
+          if (targetWasp.isDead()) this.removeWasp(targetWasp);
+          this.showHiveState();
+          if (this.wasps.length == 0) {
+            alert("Game over");
+            //newGame();
+          }
+        };
+      }
+      const newGame = () => new Hive("hive");
+      const hive = new Hive("hive");
+    </script>
+  </body>
+</html>
